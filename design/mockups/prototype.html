@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clearway Prototype</title>
+<style>
+:root{
+  --surface:#131313; --container:#1F1F1F; --high:#2A2A2A; --highest:#353535;
+  --on:#E2E2E2; --onv:#9E9E9E; --oxygen:#4FD1C5; --tissue:#FFB59E; --data:#C6B8FF;
+  --calm:#8AB4F8; --calmOn:#0B1B33; --repair:#F6B26B; --repairOn:#2B1700; --base:#0E0E0E;
+  --danger:#F28B82;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#070707}
+body{font-family:Inter, system-ui, -apple-system, "Segoe UI", sans-serif;color:var(--on);-webkit-font-smoothing:antialiased;overflow:hidden}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+
+/* ---------- device ---------- */
+.phone{width:414px;height:868px;border-radius:64px;background:#050505;padding:12px;position:relative;
+  box-shadow:0 0 0 1.5px #303030,0 0 0 9px #0b0b0b,0 0 0 10.5px #262626,0 40px 90px rgba(0,0,0,.65)}
+.screen{width:390px;height:844px;border-radius:52px;overflow:hidden;position:relative;background:var(--surface)}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:#000;z-index:60}
+.statusbar{height:50px;display:flex;justify-content:space-between;align-items:center;padding:12px 32px 0 40px;font-weight:600;font-size:16px;position:relative;z-index:55}
+.sb-icons{display:flex;gap:6px;align-items:center}
+.content{padding:0 20px}
+.fade-wrap{position:absolute;inset:0}
+
+/* ---------- type ---------- */
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--onv)}
+.h1{font-size:28px;line-height:34px;font-weight:650;letter-spacing:-.01em}
+.h2{font-size:22px;line-height:28px;font-weight:650;letter-spacing:-.005em}
+.h3{font-size:17px;line-height:22px;font-weight:600}
+.body{font-size:16px;line-height:22px;color:#CFCFCF}
+.foot{font-size:13px;line-height:18px;color:var(--onv)}
+.cap{font-size:12px;line-height:16px;color:var(--onv)}
+
+/* ---------- components ---------- */
+.card{background:var(--container);border-radius:20px;padding:14px 16px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:16px;background:var(--high);font-size:14px;color:var(--on);border:1px solid transparent;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.ev{display:inline-block;font-size:10px;font-weight:700;line-height:14px;padding:0 5px;border-radius:5px;border:1px solid currentColor;letter-spacing:.03em}
+.ev.A{color:var(--oxygen)} .ev.B{color:var(--data)} .ev.C{color:#B9B9B9}
+.btn{height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:650}
+.opt{height:58px;border-radius:16px;background:var(--container);display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:17px;border:1.5px solid transparent;margin-bottom:10px}
+.opt.sel{border-color:var(--oxygen);background:#15302e}
+.tick{width:24px;height:24px;border-radius:12px;border:1.5px solid #4a4a4a;display:flex;align-items:center;justify-content:center}
+.opt.sel .tick{background:var(--oxygen);border-color:var(--oxygen)}
+.progress{display:flex;gap:4px}
+.progress i{flex:1;height:4px;border-radius:2px;background:#2c2c2c}
+.progress i.on{background:var(--oxygen)}
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:86px;background:rgba(17,17,17,.96);border-top:1px solid #242424;display:flex;justify-content:space-around;align-items:flex-start;padding-top:10px;z-index:40}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:#8a8a8a;width:64px}
+.tab.on{color:var(--on)}
+.sos{position:absolute;left:50%;transform:translateX(-50%);bottom:30px;width:70px;height:70px;border-radius:35px;background:var(--calm);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 6px #111,0 8px 24px rgba(138,180,248,.35);z-index:45}
+.sos-label{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;font-size:11px;font-weight:600;color:var(--calm);z-index:45}
+.ripple{position:absolute;border-radius:50%;border:3px solid rgba(255,255,255,.85);pointer-events:none;z-index:90}
+.toast{position:absolute;left:16px;right:16px;top:58px;background:#1d2b2a;border:1px solid #2f5f5a;border-radius:18px;padding:12px 14px;display:flex;gap:12px;align-items:center;z-index:70}
+.row{display:flex;align-items:center}
+.sp{flex:1}
+.ring-txt{font-size:20px;font-weight:700}
+.bar{height:8px;border-radius:4px;background:#2a2a2a;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:4px}
+.toggle{width:46px;height:28px;border-radius:14px;background:#3a3a3a;position:relative}
+.toggle.on{background:var(--oxygen)}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:11px;background:#fff;transition:none}
+.toggle.on::after{left:21px}
+
+/* ---------- stage (video) ---------- */
+#stage{width:1920px;height:1080px;position:relative;overflow:hidden;
+  background:radial-gradient(1200px 800px at 50% 45%,#141a1a 0%,#0a0a0a 55%,#060606 100%)}
+.left{position:absolute;left:96px;top:110px;width:520px}
+.right{position:absolute;left:1268px;top:150px;width:560px}
+.phone-slot{position:absolute;left:753px;top:106px}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:46px}
+.brand b{font-size:30px;font-weight:700;letter-spacing:-.01em}
+.brand span{font-size:15px;color:var(--onv)}
+.chap{display:flex;align-items:center;gap:14px;height:46px;font-size:19px;color:#6d6d6d}
+.chap .dot{width:10px;height:10px;border-radius:5px;background:#333}
+.chap.done{color:#9a9a9a}.chap.done .dot{background:#4FD1C5;opacity:.5}
+.chap.on{color:#fff;font-weight:600}.chap.on .dot{background:#4FD1C5;box-shadow:0 0 0 5px rgba(79,209,197,.18)}
+.ann-k{font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--oxygen);margin-bottom:12px}
+.ann-t{font-size:40px;line-height:46px;font-weight:700;letter-spacing:-.015em;margin-bottom:22px}
+.ann-see{font-size:21px;line-height:30px;color:#d6d6d6;margin-bottom:30px}
+.ann-why{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8d8d8d;margin-bottom:12px}
+.ann-li{display:flex;gap:12px;font-size:18px;line-height:26px;color:#c9c9c9;margin-bottom:14px}
+.ann-li i{flex:none;width:6px;height:6px;border-radius:3px;background:var(--oxygen);margin-top:11px}
+.ann-src{margin-top:22px;font-size:15px;color:#7d7d7d}
+.footer{position:absolute;left:96px;right:96px;bottom:34px;display:flex;justify-content:space-between;font-size:14px;color:#6a6a6a}
+.tl{position:absolute;left:96px;right:96px;bottom:74px;height:3px;background:#1f1f1f;border-radius:2px}
+.tl>i{display:block;height:100%;background:var(--oxygen);border-radius:2px}
+
+/* ---------- board / still ---------- */
+.board{padding:70px 80px;background:#0a0a0a;width:1720px}
+.board-h{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:46px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:54px 40px}
+.cell{display:flex;flex-direction:column;align-items:center}
+.cell .cap2{margin-top:22px;text-align:center;width:430px}
+.cell .cap2 b{display:block;font-size:20px;margin-bottom:6px}
+.cell .cap2 span{font-size:15px;line-height:21px;color:#9a9a9a}
+.still{padding:40px;display:inline-block;background:transparent}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+/* ======================= utilities ======================= */
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const lerp=(a,b,k)=>a+(b-a)*k;
+const eis=x=>-(Math.cos(Math.PI*clamp(x))-1)/2;            // easeInOutSine
+const eoc=x=>1-Math.pow(1-clamp(x),3);                      // easeOutCubic
+const seg=(t,a,b)=>clamp((t-a)/(b-a));                       // 0..1 progress of t within [a,b]
+function hex2rgb(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+function mix(a,b,k){const A=hex2rgb(a),B=hex2rgb(b);return'#'+A.map((v,i)=>Math.round(lerp(v,B[i],clamp(k))).toString(16).padStart(2,'0')).join('')}
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const mmss=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+// 4 s in / 6 s out pacer: phase-continuous, inhale fraction 0.4 (blueprint §4.3 motion math)
+function pacer(el,period=10,inFrac=0.4){const f=((el%period)+period)%period/period;return f<inFrac?{p:eis(f/inFrac),inhale:true,f}:{p:1-eis((f-inFrac)/(1-inFrac)),inhale:false,f}}
+let UID=0;
+
+/* ======================= icons ======================= */
+const I={
+ home:c=>`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>`,
+ chart:c=>`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round"><path d="M5 19V11M12 19V5M19 19v-5"/></svg>`,
+ plan:c=>`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="9" width="17" height="6.5" rx="3.25" transform="rotate(-35 12 12.25)"/><path d="M9.6 8.4l4.1 5.9"/></svg>`,
+ me:c=>`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.2-3.6 4-5.3 7-5.3s5.8 1.7 7 5.3"/></svg>`,
+ wave:(c,s=30)=>`<svg width="${s}" height="${s}" viewBox="0 0 32 32" fill="none" stroke="${c}" stroke-width="2.6" stroke-linecap="round"><path d="M3 18c3 0 3-4 6.5-4S13 18 16 18s3.5-4 6.5-4S26 18 29 18"/><path d="M3 24c3 0 3-4 6.5-4S13 24 16 24s3.5-4 6.5-4S26 24 29 24" opacity=".55"/><path d="M11 10c1.5-3 4-4.5 7-4" opacity=".8"/></svg>`,
+ x:c=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
+ back:c=>`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>`,
+ check:(c,s=16)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`,
+ mic:c=>`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>`,
+ info:c=>`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>`,
+ arrow:c=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`,
+ bell:c=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>`,
+ haptic:c=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round"><rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4 9v6M20 9v6M1.5 11v2M22.5 11v2"/></svg>`,
+ leaf:c=>`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14z"/><path d="M5 19l7-7"/></svg>`,
+};
+function statusBar(dark){
+  const c='#F2F2F2';
+  return `<div class="statusbar"><span class="num">9:41</span><span class="sb-icons">
+  <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="${c}"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="${c}"/><rect x="10" y="3" width="3" height="9" rx="1" fill="${c}"/><rect x="15" y="0" width="3" height="12" rx="1" fill="${c}"/></svg>
+  <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="${c}" stroke-width="1.6" stroke-linecap="round"><path d="M1.5 4.2a9.5 9.5 0 0 1 13 0M4 6.9a6 6 0 0 1 8 0M6.6 9.5a2.4 2.4 0 0 1 2.8 0"/></svg>
+  <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="${c}" opacity=".45"/><rect x="2.2" y="2.2" width="17" height="8.6" rx="2" fill="${c}"/><rect x="24.6" y="4.2" width="1.8" height="4.6" rx=".9" fill="${c}" opacity=".45"/></svg>
+  </span></div>`;
+}
+function tabBar(active){
+  const tabs=[['home','Today'],['chart','Insights'],['',''],['plan','Plan'],['me','Me']];
+  return `<div class="tabbar">${tabs.map(([ic,l])=>ic?`<div class="tab ${l===active?'on':''}">${I[ic](l===active?'#E2E2E2':'#8a8a8a')}<span>${l}</span></div>`:'<div class="tab"></div>').join('')}</div>
+  <div class="sos" data-tap="sos">${I.wave('#0B1B33',34)}</div><div class="sos-label">Craving</div>`;
+}
+
+/* ======================= lung avatar (SVG stand-in for the Rive file) ======================= */
+const LUNG_L="M138 92 C120 70 84 76 66 112 C48 148 42 200 50 238 C56 266 82 282 108 276 C126 272 136 262 138 246 Z";
+const LUNG_R="M162 92 C180 70 216 76 234 112 C252 148 258 200 250 238 C244 266 218 282 192 276 C176 272 166 264 164 252 C176 240 178 222 170 208 C165 200 162 192 162 184 Z";
+const BR_L=[[150,100,124,122,9],[124,122,104,148,7],[104,148,84,134,4],[84,134,68,126,2.5],[84,134,80,112,2.2],[104,148,92,184,5],[92,184,74,200,3],[74,200,62,214,2],[92,184,84,220,3.5],[84,220,80,250,2.2],[104,148,116,186,4],[116,186,122,222,2.8],[122,222,118,252,1.8],[116,186,130,200,2]];
+const BR=[...BR_L,...BR_L.map(([a,b,c,d,w])=>[300-a,b,300-c,d,w])];
+const CILIA_SEGS=[0,1,5,8,10].flatMap(i=>[BR_L[i],[300-BR_L[i][0],BR_L[i][1],300-BR_L[i][2],BR_L[i][3],BR_L[i][4]]]);
+const CLEAR_PATHS=[[[92,184],[104,148],[124,122],[150,100],[150,30]],[[208,184],[196,148],[176,122],[150,100],[150,30]],[[116,186],[104,148],[124,122],[150,100],[150,30]]];
+function alongPath(pts,u){let L=[],tot=0;for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);L.push(d);tot+=d}let s=u*tot;for(let i=0;i<L.length;i++){if(s<=L[i]){const k=s/L[i];return[lerp(pts[i][0],pts[i+1][0],k),lerp(pts[i][1],pts[i+1][1],k)]}s-=L[i]}return pts[pts.length-1]}
+function lungSVG(o){
+  const {size=230,tar=.3,inflam=.2,cilia=.6,o2=.9,breath=.5,t=0,haze=0,clearance=false,mode='inspect'}=o;
+  const id='l'+(UID++);
+  const tissue=mix(mix('#5B6573','#FFB59E',o2),'#43474e',tar*0.62);
+  const top=mix(tissue,'#ffffff',.14), bot=mix(tissue,'#000000',.12);
+  const brC=mix('#F6D9CE','#F6B26B',inflam), brW=1+.12*inflam;
+  const s=1+.035*(breath-.5)*2;
+  const R=rng(7);
+  let alv='';for(let i=0;i<170;i++){const x=40+R()*220,y=85+R()*200,r=2.8+R()*4.2;alv+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${mix(tissue,'#ffffff',.22)}" fill-opacity=".28" stroke="${mix(tissue,'#000000',.25)}" stroke-opacity=".28" stroke-width=".6"/>`}
+  const R2=rng(11);let soot='';const n=Math.round(330*tar);for(let i=0;i<n;i++){const x=42+R2()*216,y=88+R2()*196,r=.7+R2()*1.7;soot+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" fill="#18191b" fill-opacity="${(.55+R2()*.35).toFixed(2)}"/>`}
+  const br=BR.map(([a,b,c,d,w])=>`<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="${brC}" stroke-width="${(w*brW).toFixed(2)}" stroke-linecap="round" stroke-opacity=".92"/>`).join('');
+  // cilia: travelling wave along main airways — speed & amplitude bound to ciliaMotility (visual metaphor)
+  const speed=.2+1.3*cilia, amp=.2+.8*cilia; let cil='';
+  CILIA_SEGS.forEach(([a,b,c,d,w],si)=>{const L=Math.hypot(c-a,d-b),ux=(c-a)/L,uy=(d-b)/L,nx=-uy,ny=ux;
+    for(let k=4;k<L-2;k+=5){const px=a+ux*k,py=b+uy*k,ph=Math.sin(2*Math.PI*speed*t-k*.42-si)*0.75*amp;
+      for(const sg of[1,-1]){const bx=px+nx*sg*(w*brW/2+.3),by=py+ny*sg*(w*brW/2+.3);const ang=Math.atan2(ny*sg,nx*sg)+ph;const ex=bx+Math.cos(ang)*3.6,ey=by+Math.sin(ang)*3.6;
+        cil+=`<line x1="${bx.toFixed(1)}" y1="${by.toFixed(1)}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="#7FE3D8" stroke-opacity="${(.45+.4*cilia).toFixed(2)}" stroke-width=".9" stroke-linecap="round"/>`}}});
+  let clr='';if(clearance){for(let i=0;i<9;i++){const u=((t*.16+i/9)%1);const p=alongPath(CLEAR_PATHS[i%3],u);const a=Math.sin(Math.PI*u);clr+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.3" fill="#F6B26B" fill-opacity="${(.85*a).toFixed(2)}"/>`}}
+  const glowOp=(.14+.26*o2)*(mode==='craving'?.6:1);
+  const glowC=mode==='craving'?'#8AB4F8':mode==='slip'?'#F6B26B':'#4FD1C5';
+  return `<svg width="${size}" height="${size}" viewBox="0 0 300 300">
+  <defs>
+   <radialGradient id="${id}g" cx="50%" cy="58%" r="55%"><stop offset="0" stop-color="${glowC}" stop-opacity="${glowOp.toFixed(2)}"/><stop offset="1" stop-color="${glowC}" stop-opacity="0"/></radialGradient>
+   <linearGradient id="${id}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bot}"/></linearGradient>
+   <clipPath id="${id}c"><path d="${LUNG_L}"/><path d="${LUNG_R}"/></clipPath>
+   <filter id="${id}b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+  <circle cx="150" cy="172" r="${(116+8*breath).toFixed(1)}" fill="url(#${id}g)"/>
+  <g transform="translate(150 175) scale(${s.toFixed(4)}) translate(-150 -175)">
+   <path d="${LUNG_L}" fill="url(#${id}f)"/><path d="${LUNG_R}" fill="url(#${id}f)"/>
+   <g clip-path="url(#${id}c)">${alv}${soot}
+     ${haze>0?`<rect x="30" y="70" width="240" height="220" fill="#9aa0a8" opacity="${(haze*.45).toFixed(2)}" filter="url(#${id}b)"/>`:''}
+   </g>
+   <path d="${LUNG_L}" fill="none" stroke="${mix(tissue,'#ffffff',.35)}" stroke-opacity=".5" stroke-width="1.2"/><path d="${LUNG_R}" fill="none" stroke="${mix(tissue,'#ffffff',.35)}" stroke-opacity=".5" stroke-width="1.2"/>
+   <rect x="${150-7*brW}" y="22" width="${14*brW}" height="80" rx="7" fill="${brC}" fill-opacity=".95"/>
+   ${[34,46,58,70,82].map(y=>`<line x1="${150-7*brW}" y1="${y}" x2="${150+7*brW}" y2="${y}" stroke="${mix(brC,'#000000',.22)}" stroke-width="1.3"/>`).join('')}
+   ${br}${mode==='craving'?'':cil}${clr}
+  </g></svg>`;
+}
+
+/* ======================= small widgets ======================= */
+function ring(pct,color,size=56,stroke=6,label){
+  const r=(size-stroke)/2,C=2*Math.PI*r;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#2c2c2c" stroke-width="${stroke}"/>
+  <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${(C*clamp(pct)).toFixed(2)} ${C.toFixed(2)}" transform="rotate(-90 ${size/2} ${size/2})"/>
+  ${label?`<text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" fill="#E2E2E2" font-size="13" font-weight="700" font-family="Inter" style="font-variant-numeric:tabular-nums">${label}</text>`:''}</svg>`;
+}
+function rippleAt(x,y,k){const r=10+46*eoc(k);return `<div class="ripple" style="left:${x-r}px;top:${y-r}px;width:${2*r}px;height:${2*r}px;opacity:${(1-k).toFixed(2)}"></div><div class="ripple" style="left:${x-9}px;top:${y-9}px;width:18px;height:18px;background:rgba(255,255,255,${(.55*(1-k)).toFixed(2)});border:none"></div>`}
+// Taps target elements by data-tap id; position comes from the live layout so it can't drift.
+function placeRipples(sc,lt){
+  const scr=root.querySelector('.screen');if(!scr||!sc.taps)return;
+  const sr=scr.getBoundingClientRect();let html='';
+  for(const tp of sc.taps){const k=seg(lt,tp.at,tp.at+.55);if(k<=0||k>=1)continue;
+    const el=scr.querySelector(`[data-tap="${tp.id}"]`);if(!el)continue;
+    const r=el.getBoundingClientRect();html+=rippleAt(r.left+r.width/2-sr.left,r.top+r.height/2-sr.top,k)}
+  if(html)scr.insertAdjacentHTML('beforeend',html);
+}
+
+/* ======================= SCREENS ======================= */
+/* 1. Onboarding — §3.2 items (original wording) */
+function scrOnboarding(t){
+  const qA={n:2,sec:'Dependence',q:'After you wake up, how soon do you usually have your first cigarette?',opts:['Within 5 minutes','6–30 minutes','31–60 minutes','After 60 minutes'],sel:t>=2.2?1:-1,why:'How soon you smoke after waking is the best single sign of how strongly nicotine pulls you — it shapes your medication tips.'};
+  const qB={n:4,sec:'Triggers',q:'I reach for a cigarette to take the edge off when I’m stressed, anxious, angry or down.',opts:['Never','Rarely','Sometimes','Often','Almost always'],sel:t>=5.2?3:-1,why:'Knowing your main trigger lets us put the right tool first on your home screen.'};
+  const k=eis(seg(t,3.4,3.95));
+  const one=(q,x)=>`<div style="position:absolute;left:0;right:0;top:0;transform:translateX(${x}px)" class="content">
+    <div class="eyebrow" style="margin:22px 0 10px">${q.sec} · question ${q.n} of 12</div>
+    <div class="h1" style="margin-bottom:28px">${q.q}</div>
+    ${q.opts.map((o,i)=>`<div class="opt ${i===q.sel?'sel':''}" data-tap="q${q.n}-${i}"><span>${o}</span><span class="tick">${i===q.sel?I.check('#0d2422',14):''}</span></div>`).join('')}
+    <div class="card row" style="margin-top:14px;gap:10px;align-items:flex-start;background:#181818">${I.info('#4FD1C5')}<span class="foot sp"><b style="color:#cfcfcf">Why we ask:</b> ${q.why}</span></div>
+  </div>`;
+  const prog=Math.round(lerp(2,4,k));
+  return `${statusBar()}
+  <div class="content row" style="height:44px;gap:14px">${I.back('#bdbdbd')}<div class="progress sp">${Array.from({length:12},(_,i)=>`<i class="${i<prog?'on':''}"></i>`).join('')}</div><span class="cap num">${prog}/12</span></div>
+  <div style="position:relative;height:620px;overflow:hidden">${one(qA,-390*k)}${one(qB,390*(1-k))}</div>
+  <div class="content" style="position:absolute;bottom:40px;left:0;right:0"><div class="foot" style="text-align:center">No right answers. This tailors your plan —<br>about 90 seconds, one tap per question.</div></div>`;
+}
+
+/* 2. Lung-age estimate — §1.1 (range, never a normal/abnormal band) */
+function lungChart(t){
+  const W=350,H=226,x0=38,x1=338,y0=14,y1=186;
+  const X=a=>x0+(a-25)/(85-25)*(x1-x0), Y=v=>y1-(v-30)/(105-30)*(y1-y0);
+  const never=a=>100-.62*(a-25), smoke=a=>never(a)-.035*Math.pow(Math.max(0,a-18),1.5);
+  const quit=a=>smoke(34)+.6*Math.min(1,a-34)-.62*(a-34);
+  const draw=eis(seg(t,.4,3.4)), drawQ=eis(seg(t,2.6,4.6));
+  const path=(f,a0,a1,k)=>{let d='';const end=a0+(a1-a0)*k;for(let a=a0;a<=end+.001;a+=.5)d+=(d?'L':'M')+X(a).toFixed(1)+' '+Y(f(a)).toFixed(1);return d};
+  const band=(f,w,k)=>{const end=34+(85-34)*k;let up='',dn='';for(let a=34;a<=end+.001;a+=1){const e=w(a);up+=(up?'L':'M')+X(a).toFixed(1)+' '+Y(f(a)+e).toFixed(1);dn=`L${X(a).toFixed(1)} ${Y(f(a)-e).toFixed(1)}`+dn}return up+dn+'Z'};
+  const bandOp=seg(t,3.2,4.4);
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block">
+   ${[40,60,80,100].map(v=>`<line x1="${x0}" y1="${Y(v)}" x2="${x1}" y2="${Y(v)}" stroke="#262626"/><text x="${x0-8}" y="${Y(v)+4}" fill="#7a7a7a" font-size="11" text-anchor="end" font-family="Inter">${v}</text>`).join('')}
+   ${[25,45,65,85].map(a=>`<text x="${X(a)}" y="${H-20}" fill="#7a7a7a" font-size="11" text-anchor="middle" font-family="Inter">${a}</text>`).join('')}
+   <text x="${(x0+x1)/2}" y="${H-3}" fill="#7a7a7a" font-size="11" text-anchor="middle" font-family="Inter">Age (years)</text>
+   <path d="${band(smoke,a=>1.2+.16*(a-34),drawQ)}" fill="#F6B26B" fill-opacity="${(.13*bandOp).toFixed(3)}"/>
+   <path d="${band(a=>quit(a)-(.9+.06*(a-34))/2,a=>(.9+.06*(a-34))/2+.3,drawQ)}" fill="#4FD1C5" fill-opacity="${(.16*bandOp).toFixed(3)}"/>
+   <path d="${path(never,25,85,draw)}" fill="none" stroke="#8d8d8d" stroke-width="2" stroke-dasharray="5 5"/>
+   <path d="${path(smoke,25,85,draw)}" fill="none" stroke="#F6B26B" stroke-width="2.6"/>
+   <path d="${path(quit,34,85,drawQ)}" fill="none" stroke="#4FD1C5" stroke-width="3"/>
+   ${draw>.18?`<circle cx="${X(34)}" cy="${Y(smoke(34))}" r="6" fill="#E2E2E2" stroke="#131313" stroke-width="2"/>
+   <text x="${X(34)+4}" y="${Y(smoke(34))-14}" fill="#E2E2E2" font-size="12" font-weight="600" font-family="Inter">You, 34</text>`:''}
+  </svg>`;
+}
+function scrLungAge(t){
+  const k=seg(t,1.2,2.6);
+  return `${statusBar()}
+  <div class="content">
+   <div class="row" style="height:44px">${I.back('#bdbdbd')}<span class="sp"></span><span class="pill" style="background:#2a2a2a;color:#cfcfcf">${I.info('#cfcfcf')} Estimate · not a lung test</span></div>
+   <div class="eyebrow" style="margin:14px 0 6px">Your lung estimate</div>
+   <div class="row" style="align-items:flex-end;gap:10px"><span class="num" style="font-size:56px;line-height:60px;font-weight:700;color:var(--repair);opacity:${k}">+3</span><span style="font-size:20px;font-weight:600;margin-bottom:9px">years lung-age gap</span></div>
+   <div class="foot" style="margin:2px 0 14px">Likely range <b class="num" style="color:#e2e2e2">0 to +9 years</b> · from age, height and 12 pack-years, using published population equations (GLI Global).</div>
+   <div class="card" style="padding:12px 6px 8px">${lungChart(t)}
+     <div class="row" style="gap:14px;padding:6px 10px 2px;flex-wrap:wrap" >
+      <span class="cap row" style="gap:6px"><i style="width:16px;height:3px;background:#4FD1C5;display:inline-block;border-radius:2px"></i>If you quit now</span>
+      <span class="cap row" style="gap:6px"><i style="width:16px;height:3px;background:#F6B26B;display:inline-block;border-radius:2px"></i>If you keep smoking</span>
+      <span class="cap row" style="gap:6px"><i style="width:16px;height:0;border-top:2px dashed #8d8d8d;display:inline-block"></i>Never smoked</span></div>
+   </div>
+   <div class="card" style="margin-top:12px;display:flex;gap:12px;opacity:${seg(t,4.4,5.2)}"><div style="color:var(--oxygen);margin-top:2px">${I.leaf('#4FD1C5')}</div>
+     <div><div class="h3" style="margin-bottom:4px">Quitting bends the curve</div><div class="foot">After quitting, decline tends to return toward the never-smoked slope. Shading shows the uncertainty — your real lungs may differ.</div></div></div>
+   <div class="row" style="gap:10px;margin-top:14px;opacity:${seg(t,5,5.8)}">
+     <div class="btn sp" style="background:var(--oxygen);color:#062522">Set my quit date</div>
+     <div class="btn" style="width:150px;background:#262626;color:#e2e2e2;font-size:15px">How it’s estimated</div></div>
+   <div class="cap" style="text-align:center;margin-top:12px;opacity:${seg(t,5,5.8)}">For a real measurement, ask a clinician about spirometry.</div>
+  </div>`;
+}
+
+/* 3. Home — inspect mode, delta reveal, two-number Recovery Index */
+function scrHome(t,opt={}){
+  const rv=eis(seg(t,.6,3.1));
+  const L={tar:lerp(.36,.31,rv),inflam:lerp(.3,.26,rv),cilia:lerp(.55,.62,rv),o2:lerp(.84,.92,rv)};
+  const br=pacer(t,5,.4).p;
+  const hrs=Math.round(lerp(-3,0,rv));
+  const days=hrs<0?11:12, hh=hrs<0?24+hrs:4+Math.floor(seg(t,3,9)*0);
+  const slow=lerp(.54,.58,rv);
+  const toast=seg(t,3.1,3.6)*(1-seg(t,6.4,6.9));
+  return `${statusBar()}
+  ${toast>0?`<div class="toast" style="opacity:${toast.toFixed(2)};transform:translateY(${(-12*(1-toast)).toFixed(1)}px)"><div>${I.haptic('#4FD1C5')}</div><div><div style="font-size:15px;font-weight:650">Day 12 — clean-up in progress</div><div class="cap">Airways typically clear out in weeks 1–2 after quitting.</div></div></div>`:''}
+  <div class="content">
+   <div class="row" style="margin-top:6px"><span class="eyebrow">Thursday</span><span class="sp"></span>${I.bell('#9e9e9e')}</div>
+   <div class="row" style="align-items:baseline;gap:8px;margin-top:2px"><span class="num" style="font-size:58px;line-height:62px;font-weight:700;letter-spacing:-.02em">${days}</span><span style="font-size:22px;font-weight:600">days smoke-free</span></div>
+   <div class="cap" style="margin-top:0">Your total · never resets &nbsp;·&nbsp; current run <span class="num">${days} d</span></div>
+   <div class="card" style="margin-top:10px;padding:10px 12px 0;position:relative;height:250px;overflow:hidden;background:linear-gradient(180deg,#1b1f1f,#191919)">
+     <div class="row"><span class="pill" style="background:rgba(246,178,107,.13);color:#F6B26B">Clearance window · day 12</span><span class="sp"></span><span class="cap row" style="gap:4px">${I.info('#9e9e9e')} Illustration</span></div>
+     <div style="display:flex;justify-content:center;margin-top:-4px">${lungSVG({size:226,...L,breath:br,t,clearance:true})}</div>
+   </div>
+   <div class="row" style="gap:10px;margin-top:10px">
+     <div class="card sp row" style="gap:10px;padding:12px">${ring(.99,'#4FD1C5',50,6,'99%')}<div><div class="row" style="gap:6px;font-size:14px;font-weight:650">Fast <span class="ev A">A</span></div><div class="cap">Carbon monoxide cleared (est.)</div></div></div>
+     <div class="card sp row" style="gap:10px;padding:12px">${ring(slow,'#C6B8FF',50,6,Math.round(slow*100)+'%')}<div><div class="row" style="gap:6px;font-size:14px;font-weight:650">Slow <span class="ev B">B</span><span class="ev C">C</span></div><div class="cap">Airways, vessels, smell</div></div></div>
+   </div>
+   <div class="card row" style="margin-top:10px;padding:12px 14px">
+     <div class="sp"><div class="num" style="font-size:20px;font-weight:700;color:var(--oxygen)">$64.80</div><div class="cap">money kept</div></div>
+     <div class="sp"><div class="num" style="font-size:20px;font-weight:700">216</div><div class="cap">not smoked</div></div>
+     <div class="sp"><div class="num" style="font-size:20px;font-weight:700">~3 days</div><div class="cap">life kept, on avg.*</div></div>
+   </div>
+   <div class="card row" style="margin-top:10px;gap:12px;padding:12px 14px;background:#1d1c25"><div style="width:36px;height:36px;border-radius:12px;background:#2c2840;display:flex;align-items:center;justify-content:center">${I.wave('#C6B8FF',22)}</div><div class="sp"><div style="font-size:15px;font-weight:650">Stress is your top trigger</div><div class="cap">2-minute breathing is ready when work gets heavy</div></div>${I.arrow('#C6B8FF')}</div>
+   <div class="row" style="margin-top:12px;gap:10px;padding:0 4px"><span class="cap">Next: airway clearance, typical range</span><span class="sp"></span><span class="cap num" style="color:#e2e2e2">2 days</span></div>
+   <div class="bar" style="margin:6px 4px 0;height:6px"><i style="width:${(100*lerp(.8,.857,rv)).toFixed(1)}%;background:#C6B8FF"></i></div>
+   <div class="cap" style="margin-top:8px;padding:0 4px;font-size:11px">*Average estimate from population studies; your own risk differs.</div>
+  </div>
+  ${tabBar('Today')}`;
+}
+
+/* 4. Craving SOS — 180-s Urge Surfer, 0.1 Hz pacer, mic on-device */
+function scrCraving(t,startElapsed=72){
+  const el=startElapsed+t, rem=180-el;
+  const P=pacer(el);
+  const steps=[[0,'Check in'],[10,'Anchor'],[30,'Locate & label'],[70,'Ride the wave'],[130,'Allow & notice'],[160,'Re-rate & choose']];
+  let si=0;steps.forEach((s,i)=>{if(el>=s[0])si=i});
+  const narr={3:'Urges rise, peak and fall. It may build before it eases — that’s normal. You’re on the board, not under the water.',2:'Where is the urge living right now? Just notice how it feels.',4:'Whatever it’s doing is OK. Make a little room for it.',1:'Feel your feet on the floor. Let the breath set the pace.'}[si]||'';
+  const ringR=138,C=2*Math.PI*ringR, prog=clamp(rem/180);
+  const cr=lerp(64,118,P.p);
+  const lblIn=P.inhale?1:0;
+  // exhale-detected meter (mic), active only during out-breath
+  const exK=P.inhale?0:Math.sin(Math.PI*clamp((P.f-.4)/.6));
+  const meter=Array.from({length:22},(_,i)=>{const n=.35+.65*Math.abs(Math.sin(i*1.7+el*9.3)*Math.cos(i*.6+el*5.1));return `<i style="width:4px;border-radius:2px;background:#8AB4F8;height:${(4+20*exK*n).toFixed(1)}px;opacity:${(.35+.65*exK).toFixed(2)}"></i>`}).join('');
+  // wave strip
+  let wd='';for(let x=0;x<=350;x+=4){const y=30+Math.sin(x/38-el*1.4)*9*(.6+.4*P.p)+Math.sin(x/17+el*.8)*2;wd+=(wd?'L':'M')+x+' '+y.toFixed(1)}
+  const sx=175, sy=30+Math.sin(sx/38-el*1.4)*9*(.6+.4*P.p)+Math.sin(sx/17+el*.8)*2;
+  return `<div style="position:absolute;inset:0;background:#0E0E0E"></div><div style="position:relative">${statusBar()}
+  <div class="content row" style="height:40px"><span style="width:22px"></span><span class="sp" style="text-align:center;font-size:15px;font-weight:600;color:#9fb6dc">Urge Surfer</span>${I.x('#8a8a8a')}</div>
+  <div style="text-align:center;margin-top:6px"><span class="pill" style="background:rgba(138,180,248,.12);color:#8AB4F8">Step ${si+1} of 6 · ${steps[si][1]}</span></div>
+  <div style="position:relative;width:310px;height:310px;margin:16px auto 0">
+    <svg width="310" height="310" viewBox="0 0 310 310" style="position:absolute;inset:0"><circle cx="155" cy="155" r="${ringR}" fill="none" stroke="#1b2330" stroke-width="8"/>
+     <circle cx="155" cy="155" r="${ringR}" fill="none" stroke="#8AB4F8" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C*prog).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 155 155)"/>
+     <defs><radialGradient id="bc" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#8AB4F8" stop-opacity=".55"/><stop offset=".7" stop-color="#8AB4F8" stop-opacity=".18"/><stop offset="1" stop-color="#8AB4F8" stop-opacity=".05"/></radialGradient></defs>
+     <circle cx="155" cy="155" r="${(cr+10).toFixed(1)}" fill="#8AB4F8" fill-opacity=".06"/>
+     <circle cx="155" cy="155" r="${cr.toFixed(1)}" fill="url(#bc)" stroke="#8AB4F8" stroke-opacity=".5" stroke-width="1.5"/></svg>
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+      <div style="position:absolute;font-size:24px;font-weight:650;opacity:${lblIn}">Breathe in</div>
+      <div style="position:absolute;font-size:24px;font-weight:650;opacity:${1-lblIn}">Breathe out</div></div>
+  </div>
+  <div class="num" style="text-align:center;font-size:60px;line-height:66px;font-weight:700;margin-top:6px;letter-spacing:-.01em">${mmss(rem)}</div>
+  <div class="content" style="text-align:center;margin-top:8px;height:66px"><div class="body" style="color:#c9d6ea">${narr}</div></div>
+  <svg width="390" height="54" viewBox="0 0 350 60" style="display:block;margin-top:6px;opacity:.9"><path d="${wd}" fill="none" stroke="#8AB4F8" stroke-opacity=".55" stroke-width="2"/><circle cx="${sx}" cy="${(sy-6).toFixed(1)}" r="6" fill="#E2E2E2"/></svg>
+  <div class="content row" style="justify-content:center;gap:10px;margin-top:2px;height:26px">${I.mic('#8AB4F8')}<span class="cap" style="color:#9fb6dc">Out-breath</span><span class="row" style="gap:3px;height:24px;align-items:center">${meter}</span></div>
+  <div class="cap" style="text-align:center;margin-top:2px">Listening on-device only · never recorded</div>
+  <div class="content" style="margin-top:14px"><div class="btn" style="background:#8AB4F8;color:#0B1B33">I’m OK now</div><div style="text-align:center;margin-top:12px;font-size:15px;color:#8AB4F8">Other ways to ride it out</div></div>
+  </div>`;
+}
+
+/* 5. Rode it out — success = didn't smoke, whatever the rating */
+function scrRode(t){
+  const k=eoc(seg(t,.2,1.2));
+  const v=lerp(8,5,eis(seg(t,1.6,3.0)));
+  const badge=eoc(seg(t,3.4,4.0));
+  const chosen=t>=5?1:-1;
+  const x=v=>24+(v/10)*302;
+  return `<div style="position:absolute;inset:0;background:#0E0E0E"></div><div style="position:relative">${statusBar()}
+   <div style="display:flex;justify-content:center;margin-top:34px"><div style="width:92px;height:92px;border-radius:46px;background:rgba(138,180,248,.14);display:flex;align-items:center;justify-content:center;transform:scale(${lerp(.6,1,k)});opacity:${k}">${I.check('#8AB4F8',46)}</div></div>
+   <div class="content" style="text-align:center;margin-top:18px"><div class="h1">You rode it out.</div><div class="body" style="margin-top:8px">3 minutes with a craving — and you didn’t smoke. That’s the win, whatever the urge does next.</div></div>
+   <div class="content" style="margin-top:24px"><div class="card" style="background:#151a22">
+     <div class="row"><span class="h3">How strong is the urge now?</span><span class="sp"></span><span class="num" style="font-size:22px;font-weight:700;color:#8AB4F8">${Math.round(v)}</span><span class="cap">&nbsp;/10</span></div>
+     <div style="position:relative;height:44px;margin-top:6px">
+       <div style="position:absolute;left:24px;right:24px;top:20px;height:6px;border-radius:3px;background:#263042"></div>
+       <div style="position:absolute;left:24px;width:${(x(v)-24).toFixed(1)}px;top:20px;height:6px;border-radius:3px;background:#8AB4F8"></div>
+       <div style="position:absolute;left:${x(8)-1}px;top:12px;width:2px;height:22px;background:#5a6a86"></div>
+       <div style="position:absolute;left:${(x(v)-13).toFixed(1)}px;top:10px;width:26px;height:26px;border-radius:13px;background:#E2E2E2;box-shadow:0 2px 6px rgba(0,0,0,.5)"></div>
+     </div>
+     <div class="row cap"><span>0 calm</span><span class="sp"></span><span>before: 8</span><span class="sp"></span><span>10 intense</span></div>
+   </div></div>
+   <div class="content" style="margin-top:12px;opacity:${badge};transform:translateY(${(8*(1-badge)).toFixed(1)}px)"><div class="card row" style="gap:12px;background:#1a2230"><div style="width:40px;height:40px;border-radius:12px;background:#24324a;display:flex;align-items:center;justify-content:center">${I.wave('#8AB4F8',24)}</div><div><div style="font-size:15px;font-weight:650">Craving surfed</div><div class="cap">14 this month · urges eased ~2 points on average</div></div></div></div>
+   <div class="content" style="margin-top:20px"><div class="h3" style="margin-bottom:10px">One thing that matters next?</div>
+     <div style="display:flex;flex-wrap:wrap;gap:8px">${['Call Maya','Walk 5 min','Water & a snack','Back to work'].map((c,i)=>`<span class="chip" data-tap="act${i}" style="${i===chosen?'background:rgba(138,180,248,.18);border-color:#8AB4F8;color:#cfe0ff':''}">${c}</span>`).join('')}</div></div>
+   <div class="content" style="position:absolute;top:740px;left:0;right:0"><div class="btn" data-tap="done" style="background:#8AB4F8;color:#0B1B33">Done</div></div>
+  </div>`;
+}
+
+/* 6. Slip response — amber, never red; cumulative days untouched */
+function scrSlip(t){
+  const hz=eoc(seg(t,.3,1.4))*.6;
+  const chips=[['Stress at work',2.5],['Coffee',3.6],['Alcohol',99],['People smoking',99],['Boredom',99],['After a meal',99]];
+  const plan=eis(seg(t,5.2,5.9));
+  return `${statusBar()}
+  <div class="content">
+   <div class="row" style="gap:14px;margin-top:6px">
+     <div style="width:84px;height:84px;border-radius:24px;background:#1d1a16;display:flex;align-items:center;justify-content:center">${lungSVG({size:80,tar:.33,inflam:.32,cilia:.5,o2:.86,breath:pacer(t,5).p,t,haze:hz,mode:'slip'})}</div>
+     <div class="sp"><div class="h2">A slip is one moment, not the whole story.</div></div>
+   </div>
+   <div class="body" style="margin-top:12px">Thanks for logging this — that honesty is part of quitting. One cigarette is a slip, not a restart.</div>
+   <div class="card row" style="margin-top:14px;background:#211b13;border:1px solid #3d2e1b"><div class="sp"><div class="cap" style="color:#d9b48a">Your smoke-free days still count</div><div class="row" style="align-items:baseline;gap:6px"><span class="num" style="font-size:34px;font-weight:700;color:#F6B26B">12</span><span style="font-size:16px;font-weight:600">days in total</span></div></div><div class="cap" style="text-align:right;width:120px">Current run<br>restarts from now</div></div>
+   <div class="h3" style="margin:18px 0 10px">What was going on?</div>
+   <div style="display:flex;flex-wrap:wrap;gap:8px">${chips.map(([c,at],i)=>`<span class="chip" data-tap="c${i}" style="${t>=at?'background:rgba(246,178,107,.16);border-color:#F6B26B;color:#ffd9b0':''}">${c}</span>`).join('')}</div>
+   <div class="h3" style="margin:18px 0 10px">Your next step</div>
+   <div class="card" data-tap="plan" style="padding:12px 14px;border:1.5px solid ${plan>.5?'#F6B26B':'transparent'}"><div class="row"><span style="font-size:15px;font-weight:650">Plan for this trigger</span><span class="sp"></span><span class="tick" style="${plan>.5?'background:#F6B26B;border-color:#F6B26B':''}">${plan>.5?I.check('#2B1700',14):''}</span></div>
+     <div style="overflow:hidden;height:${(64*plan).toFixed(0)}px"><div class="foot" style="margin-top:8px;color:#d6c3ad">“If I’m stressed at work and feel the pull, then I’ll step outside for 3 breaths and open Urge Surfer.”</div></div></div>
+   <div class="card row" style="padding:12px 14px;margin-top:8px"><span style="font-size:15px;font-weight:650">Use Craving SOS next time</span><span class="sp"></span><span class="tick"></span></div>
+  </div>
+  <div class="content" style="position:absolute;top:690px;left:0;right:0"><div class="row" style="gap:10px;justify-content:center;margin-bottom:14px">${I.bell('#d6b48c')}<span class="foot" style="color:#d6b48c">We’ll check in tonight, and have your plan ready tomorrow.</span></div></div>
+  <div class="content" style="position:absolute;top:748px;left:0;right:0"><div class="btn" data-tap="keep" style="background:#F6B26B;color:#2B1700">Keep my quit going</div></div>`;
+}
+
+/* 7. Recovery timeline — clearance window + evidence grades */
+function scrTimeline(t){
+  const items=[
+    ['~30 min','Heart rate settles toward your usual level','B',true],
+    ['8–12 hours','~75% of carbon monoxide cleared (est.)','A',true],
+    ['1 week','Heart rate ~7 bpm lower on average (1 study)','B',true],
+    ['~2 weeks','Airway clearance in a typical range (1 study)','B','now'],
+    ['~1 month','Blood-vessel function improving','C',false],
+    ['~6 weeks','Sense of smell improving (1 study)','B',false]];
+  return `${statusBar()}
+  <div class="content">
+   <div class="row" style="height:40px;margin-top:4px"><span class="h2">Your recovery</span><span class="sp"></span><span class="cap num">Day 12</span></div>
+   <div class="card" style="margin-top:10px;background:#211c17;border:1px solid #3a2d1f;opacity:${seg(t,.2,.8)}">
+     <div class="row" style="gap:8px"><span class="pill" style="background:rgba(246,178,107,.16);color:#F6B26B">Clearance window · days 3–42</span></div>
+     <div class="body" style="margin-top:8px;font-size:14px;line-height:20px">Coughing more in weeks 1–2? That’s common after quitting, as airways clear out. It usually settles within about 6 weeks.</div>
+     <div class="row" style="gap:10px;margin-top:10px"><div class="btn" data-tap="cough" style="height:40px;border-radius:12px;padding:0 14px;background:#F6B26B;color:#2B1700;font-size:14px">Log a cough</div><span class="cap" style="color:#d6b48c">${t>5.6&&t<6.6?I.haptic('#F6B26B')+' clear-out':''}</span></div>
+   </div>
+   <div style="margin-top:14px;position:relative">
+    <div style="position:absolute;left:11px;top:8px;bottom:8px;width:2px;background:#2b2b2b"></div>
+    ${items.map(([w,txt,g,st],i)=>{const k=eoc(seg(t,.8+i*.5,1.3+i*.5));const done=st===true,now=st==='now';
+      return `<div class="row" style="gap:14px;align-items:flex-start;padding:5px 0;opacity:${k};transform:translateX(${(10*(1-k)).toFixed(1)}px)">
+        <div style="width:24px;height:24px;border-radius:12px;flex:none;position:relative;z-index:2;display:flex;align-items:center;justify-content:center;background:${done?'#4FD1C5':now?'#131313':'#131313'};border:2px solid ${done?'#4FD1C5':now?'#F6B26B':'#3a3a3a'}">${done?I.check('#062522',13):now?'<i style="width:8px;height:8px;border-radius:4px;background:#F6B26B"></i>':''}</div>
+        <div class="sp"><div class="row" style="gap:8px"><span class="num" style="font-size:14px;font-weight:700;color:${done?'#4FD1C5':now?'#F6B26B':'#9e9e9e'}">${w}</span><span class="ev ${g}">${g}</span>${now?'<span class="cap" style="color:#F6B26B">you are here</span>':''}</div><div style="font-size:14px;line-height:19px;color:${done||now?'#e2e2e2':'#a3a3a3'};margin-top:1px">${txt}</div></div></div>`}).join('')}
+   </div>
+   <div class="cap" style="margin-top:6px;opacity:${seg(t,4,4.6)}">Evidence grade: <span class="ev A">A</span> strong · <span class="ev B">B</span> small study · <span class="ev C">C</span> indirect. Typical timelines, not measurements of your body.</div>
+   <div class="card row" style="margin-top:10px;gap:10px;padding:10px 14px;opacity:${seg(t,4.4,5)}">${I.info('#9e9e9e')}<span class="foot sp">When to get checked: coughing up blood, chest pain, or a cough lasting more than 3 weeks.</span></div>
+  </div>
+  ${tabBar('Insights')}`;
+}
+
+/* 8. Medication plan — user-entered from label; never calculates doses */
+function scrNRT(t){
+  const stepsT=[['Chew slowly',0,1.8],['Until it tingles',1.8,3.2],['Park it by your cheek',3.2,5],['Repeat ~30 min',5,99]];
+  const cyc=t%7;
+  const toggled=t>=1.4;
+  return `${statusBar()}
+  <div class="content">
+   <div class="row" style="height:40px;margin-top:4px"><span class="h2">My medication plan</span></div>
+   <div class="cap" style="margin-top:2px">You entered this from your product label and pharmacist.</div>
+   <div class="card" style="margin-top:12px">
+     <div class="row"><div><div class="h3">Nicotine patch · 21 mg</div><div class="cap">Week 2 of 6 on your label’s schedule</div></div><span class="sp"></span><span class="pill" style="background:rgba(79,209,197,.14);color:#4FD1C5">On track</span></div>
+     <div class="row" style="gap:4px;margin-top:12px">${Array.from({length:10},(_,i)=>`<i style="flex:1;height:6px;border-radius:3px;background:${i<2?'#4FD1C5':i<6?'#2f3b3a':'#272727'}"></i>`).join('')}</div>
+     <div class="row cap" style="margin-top:6px"><span>21 mg · wk 1–6</span><span class="sp"></span><span>14 mg · wk 7–8</span><span class="sp"></span><span>7 mg · wk 9–10</span></div>
+     <div class="row" style="margin-top:12px;padding-top:12px;border-top:1px solid #2a2a2a"><span style="font-size:15px">Reminder: change patch · 7:00 am</span><span class="sp"></span><span class="toggle ${toggled?'on':''}" data-tap="patch"></span></div>
+   </div>
+   <div class="card" style="margin-top:10px">
+     <div class="row"><div><div class="h3">Nicotine gum · 2 mg</div><div class="cap">For breakthrough cravings</div></div><span class="sp"></span><div style="text-align:right"><div class="num" style="font-size:22px;font-weight:700">4</div><div class="cap">used today</div></div></div>
+     <div class="cap" style="margin-top:8px;color:#bdbdbd">Label: weeks 1–6, at least 9 pieces a day · never more than 24.</div>
+     <div style="margin-top:12px;background:#171717;border-radius:14px;padding:12px">
+       <div style="font-size:13px;font-weight:700;color:#4FD1C5;letter-spacing:.04em;margin-bottom:8px">CHEW &amp; PARK TECHNIQUE</div>
+       ${stepsT.map(([s,a,b],i)=>{const on=cyc>=a&&cyc<b;return `<div class="row" style="gap:10px;padding:5px 0;opacity:${on?1:.45}"><span style="width:22px;height:22px;border-radius:11px;background:${on?'#4FD1C5':'#2a2a2a'};color:${on?'#062522':'#bbb'};font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">${i+1}</span><span style="font-size:15px;font-weight:${on?650:450}">${s}</span></div>`}).join('')}
+       <div class="cap" style="margin-top:6px">No food or drink 15 min before or while chewing.</div>
+     </div>
+   </div>
+   <div class="row" style="gap:10px;margin-top:10px"><div class="btn sp" style="height:46px;border-radius:14px;background:#262626;color:#e2e2e2;font-size:15px">Log a side effect</div><div class="btn sp" style="height:46px;border-radius:14px;background:#262626;color:#e2e2e2;font-size:15px">Ask a pharmacist</div></div>
+   <div class="cap" style="text-align:center;margin-top:10px">We never calculate or change doses. Follow your label and your pharmacist.</div>
+  </div>
+  ${tabBar('Plan')}`;
+}
+
+/* 9. Insights — pattern insights, rules score first, ≤3 nudges/day */
+function scrInsights(t){
+  const days=['M','T','W','T','F','S','S'], parts=['6a','9a','12p','3p','6p','9p'];
+  const R=rng(5);
+  const base=[.35,.25,.2,.3,.85,.45];
+  const cells=days.map((d,di)=>parts.map((p,pi)=>clamp(base[pi]*(di>=5&&pi>=4?1.15:1)+(R()-.5)*.3)));
+  const trig=[['Stress',42],['After meals',27],['Coffee',18],['People smoking',13]];
+  return `${statusBar()}
+  <div class="content">
+   <div class="row" style="height:40px;margin-top:4px"><span class="h2">Your patterns</span><span class="sp"></span><span class="cap">Last 7 days</span></div>
+   <div class="cap">From your check-ins. Pattern insights — not predictions about your health.</div>
+   <div class="card" style="margin-top:12px">
+     <div class="row cap" style="padding-left:20px;margin-bottom:6px">${parts.map(p=>`<span class="sp" style="text-align:center">${p}</span>`).join('')}</div>
+     ${cells.map((r,di)=>`<div class="row" style="gap:5px;margin-bottom:5px"><span class="cap" style="width:15px">${days[di]}</span>${r.map((v,pi)=>{const k=eoc(seg(t,.3+pi*.18,.9+pi*.18));return `<i class="sp" style="height:22px;border-radius:6px;background:${mix('#232323','#C6B8FF',v*k)}"></i>`}).join('')}</div>`).join('')}
+     <div class="row cap" style="margin-top:6px;gap:6px"><span>fewer</span><i style="width:80px;height:6px;border-radius:3px;background:linear-gradient(90deg,#232323,#C6B8FF)"></i><span>more cravings</span></div>
+   </div>
+   <div class="card" style="margin-top:10px;background:#1d1c25;border:1px solid ${t>3.6?'#C6B8FF':'transparent'}">
+     <div class="row"><span class="pill" style="background:rgba(198,184,255,.16);color:#C6B8FF">Most likely window</span><span class="sp"></span><span class="num" style="font-size:15px;font-weight:700">6–9 pm</span></div>
+     <div style="font-size:15px;margin-top:8px">Usually after dinner, often when stressed.</div>
+     <div class="row" style="margin-top:10px;padding-top:10px;border-top:1px solid #2c2a36"><span style="font-size:15px">Nudge me at 5:50 pm with my plan</span><span class="sp"></span><span class="toggle ${t>4.4?'on':''}" data-tap="nudge"></span></div>
+   </div>
+   <div class="card" style="margin-top:10px">
+     <div class="h3" style="margin-bottom:8px">Top triggers</div>
+     ${trig.map(([n,v],i)=>{const k=eoc(seg(t,1.4+i*.2,2.4+i*.2));return `<div class="row" style="gap:10px;margin:6px 0"><span style="width:110px;font-size:14px">${n}</span><div class="bar sp"><i style="width:${(v*2*k).toFixed(1)}%;background:#C6B8FF"></i></div><span class="num cap" style="width:34px;text-align:right">${Math.round(v*k)}%</span></div>`}).join('')}
+   </div>
+   <div class="cap" style="text-align:center;margin-top:10px">At most 3 nudges a day. You can change this anytime.</div>
+  </div>
+  ${tabBar('Insights')}`;
+}
+
+/* ======================= scene list ======================= */
+const SCENES=[
+ {id:'title',dur:4.5,title:'Title'},
+ {id:'onboarding',dur:6.6,chap:'Onboarding',render:scrOnboarding,still:3.0,
+  taps:[{at:2.0,id:'q2-1'},{at:5.0,id:'q4-3'}],
+  k:'Section 3 · Onboarding',t:'12 taps, under 90 seconds',
+  see:'One question per screen, auto-advance. Scores dependence, trigger phenotype, readiness and threat-vs-efficacy.',
+  why:['Time to first cigarette is the strongest single dependence signal (Baker 2007) [V]','Original wording — FTND and WISDM text is not confirmed free to reuse','Answers pick the home “hero card” and the tone of notifications'],src:'Blueprint §3.2–3.4'},
+ {id:'lungage',dur:7.4,chap:'Lung estimate',render:scrLungAge,still:6.5,
+  k:'Section 1.1 · Lung Age',t:'A gap with a range, never one scary number',
+  see:'Estimated lung-age gap on a Fletcher–Peto-style curve: keep smoking vs quit now, with uncertainty shading.',
+  why:['Race-neutral GLI Global equations, inverted numerically [V-DATA]','Healthy variation (~17 yrs) dwarfs a typical smoking deficit — so show a band','No normal/abnormal zones: EU MDR treats “prognosis” as a medical purpose'],src:'Blueprint §1.1, §6.2'},
+ {id:'home',dur:9.2,chap:'Home',render:scrHome,still:8.0,
+  taps:[{at:8.4,id:'sos'}],
+  k:'Sections 1.2 + 4.3 · Home',t:'Recovery the user caused, animated',
+  see:'Lung avatar animates yesterday → today. Two recovery numbers. Totals that never reset.',
+  why:['Two numbers, not one: CO clears in hours (t½ ≈ 4.5 h, grade A); airways take weeks','Avatar bound via Rive Data Binding — tarDensity, ciliaMotility, alveolarOxygenation…','Money and life “kept” are balances a cigarette would subtract from (loss aversion)'],src:'Blueprint §1.2, §2.3, §4.3'},
+ {id:'craving',dur:14,chap:'Craving SOS',render:scrCraving,still:6.0,
+  k:'Sections 2.1 + 2.5 · Craving SOS',t:'One tap into a 180-second Urge Surfer',
+  see:'4 s in / 6 s out pacer (0.1 Hz). Countdown is the only number. Haptics run on the same clock.',
+  why:['Accepting body sensations was iCanQuit’s confirmed mediator (OR 1.49) [V]','No “resist it” copy — suppressing smoking thoughts rebounds (Erskine 2010) [V]','Controlled breathing: craving g = 0.30 (Roxburgh 2026) · mic stays on-device'],src:'Blueprint §2.1, §2.5, §4.5, §5.6'},
+ {id:'rode',dur:6.6,chap:'Rode it out',render:scrRode,still:5.4,
+  taps:[{at:4.8,id:'act1'},{at:6.1,id:'done'}],
+  k:'Section 2.1 · After the surf',t:'Success means you didn’t smoke',
+  see:'Re-rate the urge, earn the badge only afterwards, pick one valued next action.',
+  why:['Urge surfing cut cigarettes without lowering urge intensity (Bowen & Marlatt 2009) [V]','No gamification during a craving — badges only after the rating','Before/after ratings feed personal insights'],src:'Blueprint §2.1, §4.6'},
+ {id:'slip',dur:8.4,chap:'Slip response',render:scrSlip,still:7.0,
+  taps:[{at:2.3,id:'c0'},{at:3.4,id:'c1'},{at:5.0,id:'plan'},{at:7.6,id:'keep'}],
+  k:'Section 2.4 · Lapse protocol',t:'Amber, not red. Nothing erased.',
+  see:'Small haze on the avatar, total smoke-free days unchanged, quick chain analysis, an if-then plan.',
+  why:['Blaming a lapse on character predicts relapse (Curry 1987) — reframe to situation + plan','Never “failed”, “reset” or “start over”; no error haptics','3+ slips in 7 days → quitline & medication info, not more badges'],src:'Blueprint §2.4, §4.6'},
+ {id:'timeline',dur:7.4,chap:'Recovery timeline',render:scrTimeline,still:6.8,
+  taps:[{at:5.4,id:'cough'}],
+  k:'Sections 1.2 + 4.2 · Quitter’s flu',t:'Extra cough, reframed as clean-up',
+  see:'A clearance window explains the cough in advance; every milestone shows its evidence grade.',
+  why:['Cough and cold symptoms rise in weeks 1–2 after quitting (Ussher 2003) — warn ahead','Grade D numbers never ship; B/C carry a visible badge','“When to get checked” guidance — never a diagnosis'],src:'Blueprint §1.2, §4.2, §6.5'},
+ {id:'nrt',dur:7.4,chap:'Medication plan',render:scrNRT,still:2.4,
+  taps:[{at:1.2,id:'patch'}],
+  k:'Section 2.6 · NRT support',t:'Reminds and quotes the label. Never doses.',
+  see:'User-entered regimen, reminders, chew-and-park coaching, “ask a pharmacist” escalation.',
+  why:['FDA: user-configured medication reminders are low-risk (enforcement discretion)','Apple 1.4.2: dosage calculators only from approved entities','App + medication vs medication alone: OR 1.79, 3 trials [V]'],src:'Blueprint §2.6, §6.4'},
+ {id:'insights',dur:7,chap:'Insights',render:scrInsights,still:6.0,
+  taps:[{at:4.2,id:'nudge'}],
+  k:'Section 2.2 · JITAI',t:'Craving windows from check-ins',
+  see:'Personal pattern map and a pre-planned nudge — capped at 3 per day.',
+  why:['Ship a Smart-T-style rules score first: 16.4% vs 10.0% verified abstinence [V]','ML personalisation later — new-user AUC only ~0.64–0.75','Worded as patterns, not health predictions'],src:'Blueprint §2.2, §5.4'},
+ {id:'end',dur:5,title:'End'},
+];
+let acc=0;SCENES.forEach(s=>{s.start=acc;acc+=s.dur});const TOTAL=acc;
+
+function phoneHTML(sc,lt){
+  const fade=sc.render?clamp(lt/.35):1;
+  return `<div class="phone"><div class="screen"><div class="island"></div>
+    <div class="fade-wrap" style="opacity:${fade.toFixed(3)}">${sc.render(lt)}</div></div></div>`;
+}
+
+/* ======================= stage (video) ======================= */
+function stageHTML(T){
+  T=clamp(T,0,TOTAL-1e-4);
+  const sc=SCENES.find(s=>T>=s.start&&T<s.start+s.dur), lt=T-sc.start;
+  const chaps=SCENES.filter(s=>s.chap);
+  const tl=`<div class="tl"><i style="width:${(100*T/TOTAL).toFixed(2)}%"></i></div>`;
+  const footer=`<div class="footer"><span>Concept prototype · built from the Master Blueprint (Oct 2026)</span><span>General-wellness concept — not a medical device. Visuals are illustrative estimates.</span></div>`;
+  if(sc.id==='title'||sc.id==='end'){
+    const k=clamp(lt/.6)*(1-seg(lt,sc.dur-.5,sc.dur));
+    const inner=sc.id==='title'?`
+      <div style="font-size:18px;font-weight:700;letter-spacing:.2em;color:#4FD1C5;margin-bottom:26px">CONCEPT WALKTHROUGH</div>
+      <div style="font-size:84px;line-height:92px;font-weight:750;letter-spacing:-.025em">Clearway</div>
+      <div style="font-size:30px;color:#cfcfcf;margin-top:18px">A quit-smoking app that shows your lungs recovering</div>
+      <div style="font-size:20px;color:#8a8a8a;margin-top:40px">9 screens · every design choice traced to the research blueprint</div>
+      <div style="margin-top:56px;display:flex;justify-content:center">${lungSVG({size:260,tar:.3,inflam:.22,cilia:.62,o2:.92,breath:pacer(lt,5).p,t:lt,clearance:true})}</div>`
+    :`<div style="font-size:18px;font-weight:700;letter-spacing:.2em;color:#4FD1C5;margin-bottom:26px">BUILD ORDER FOLLOWS THE EVIDENCE</div>
+      <div style="font-size:64px;line-height:74px;font-weight:750;letter-spacing:-.02em">Test before you polish</div>
+      <div style="font-size:26px;line-height:40px;color:#cfcfcf;margin-top:26px">Gate #2: estimated Lung Age vs the Recovery display<br>Gate #1: day-30 retention · Gate #3: craving-window accuracy</div>
+      <div style="font-size:20px;color:#8a8a8a;margin-top:40px">Working title “Clearway” · placeholder brand · concept only, not a medical device</div>`;
+    return `<div id="stage"><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;opacity:${k.toFixed(3)}">${inner}</div>${tl}${footer}</div>`;
+  }
+  const ak=eoc(seg(lt,.15,.75));
+  const left=`<div class="left"><div class="brand">${lungSVG({size:46,tar:.2,cilia:.7,o2:.95,breath:.5,t:T})}<div><b>Clearway</b><br><span>concept walkthrough</span></div></div>
+    ${chaps.map(c=>`<div class="chap ${c===sc?'on':(c.start<sc.start?'done':'')}"><span class="dot"></span>${c.chap}</div>`).join('')}</div>`;
+  const right=`<div class="right" style="opacity:${ak.toFixed(3)};transform:translateY(${(14*(1-ak)).toFixed(1)}px)">
+    <div class="ann-k">${sc.k}</div><div class="ann-t">${sc.t}</div><div class="ann-see">${sc.see}</div>
+    <div class="ann-why">Why — from the research</div>${sc.why.map(w=>`<div class="ann-li"><i></i><span>${w}</span></div>`).join('')}
+    <div class="ann-src">${sc.src}</div></div>`;
+  return `<div id="stage">${left}<div class="phone-slot">${phoneHTML(sc,lt)}</div>${right}${tl}${footer}</div>`;
+}
+
+/* ======================= modes ======================= */
+const Q=new URLSearchParams(location.search);
+const root=document.getElementById('root');
+window.TOTAL=TOTAL;
+window.setTime=T=>{root.innerHTML=stageHTML(T);T=clamp(T,0,TOTAL-1e-4);const sc=SCENES.find(s=>T>=s.start&&T<s.start+s.dur);if(sc.render)placeRipples(sc,T-sc.start)};
+if(Q.has('still')){
+  const sc=SCENES.find(s=>s.id===Q.get('still'));
+  document.body.style.background='transparent';
+  root.innerHTML=`<div class="still" id="cap">${phoneHTML(sc,sc.still)}</div>`;
+}else if(Q.has('board')){
+  document.body.style.overflow='visible';
+  const cells=SCENES.filter(s=>s.render).map((s,i)=>`<div class="cell"><div style="width:${414*.9}px;height:${868*.9}px"><div style="transform:scale(.9);transform-origin:top left">${phoneHTML(s,s.still)}</div></div>
+   <div class="cap2"><b>${i+1}. ${s.chap}</b><span>${s.see}</span></div></div>`).join('');
+  root.innerHTML=`<div class="board" id="cap"><div class="board-h"><div><div style="font-size:16px;font-weight:700;letter-spacing:.2em;color:#4FD1C5;margin-bottom:12px">CONCEPT SCREENS</div><div style="font-size:56px;font-weight:750;letter-spacing:-.02em">Clearway</div><div style="font-size:22px;color:#bdbdbd;margin-top:8px">Quit-smoking + lung-recovery app · designed from the Master Blueprint</div></div>
+   <div style="text-align:right;font-size:15px;line-height:24px;color:#8a8a8a">Colours: teal = progress · blue = craving · amber = slip · no red<br>Working title and figures are placeholders · not a medical device</div></div><div class="grid">${cells}</div></div>`;
+}else if(Q.has('frames')){
+  window.setTime(0);
+}else{
+  // live playback: loops the walkthrough in real time
+  const t0=performance.now();
+  const tick=()=>{window.setTime(((performance.now()-t0)/1000)%TOTAL);requestAnimationFrame(tick)};
+  tick();
+}
+</script>
+</body>
+</html>
